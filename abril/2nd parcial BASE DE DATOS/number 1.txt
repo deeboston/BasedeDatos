@@ -1,0 +1,65 @@
+CREATE TABLE Investigador (
+    ID_Investigador SERIAL PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL
+);
+
+CREATE TABLE Proyecto (
+    ID_Proyecto SERIAL PRIMARY KEY,
+    Titulo VARCHAR(200) NOT NULL,
+    FechaInicio DATE,
+    FechaFin DATE
+);
+
+CREATE TABLE GrupoInvestigacion (
+    ID_Grupo SERIAL PRIMARY KEY,
+    NombreGrupo VARCHAR(100) NOT NULL,
+    AreaTematica VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE TrabajaEn (
+    ID_Investigador INT,
+    ID_Proyecto INT,
+    EsLider BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (ID_Investigador, ID_Proyecto),
+    FOREIGN KEY (ID_Investigador) REFERENCES Investigador(ID_Investigador),
+    FOREIGN KEY (ID_Proyecto) REFERENCES Proyecto(ID_Proyecto)
+);
+
+CREATE TABLE PerteneceA (
+    ID_Investigador INT,
+    ID_Grupo INT,
+    PRIMARY KEY (ID_Investigador, ID_Grupo),
+    FOREIGN KEY (ID_Investigador) REFERENCES Investigador(ID_Investigador),
+    FOREIGN KEY (ID_Grupo) REFERENCES GrupoInvestigacion(ID_Grupo)
+);
+
+CREATE TABLE Gestiona (
+    ID_Grupo INT,
+    ID_Proyecto INT,
+    PRIMARY KEY (ID_Grupo, ID_Proyecto),
+    FOREIGN KEY (ID_Grupo) REFERENCES GrupoInvestigacion(ID_Grupo),
+    FOREIGN KEY (ID_Proyecto) REFERENCES Proyecto(ID_Proyecto)
+);
+
+CREATE OR REPLACE FUNCTION validar_lider_unico()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.EsLider = TRUE THEN
+        IF EXISTS (
+            SELECT 1 FROM TrabajaEn
+            WHERE ID_Proyecto = NEW.ID_Proyecto
+            AND EsLider = TRUE
+        ) THEN
+            RAISE EXCEPTION 'Solo puede haber un investigador líder por proyecto';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trigger_validar_lider
+BEFORE INSERT OR UPDATE ON TrabajaEn
+FOR EACH ROW
+EXECUTE FUNCTION validar_lider_unico();

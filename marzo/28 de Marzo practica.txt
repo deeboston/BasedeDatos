@@ -1,0 +1,89 @@
+SELECT 
+    table_name AS tabla,
+    column_name AS columna,
+    data_type AS tipo_dato
+FROM information_schema.columns
+WHERE table_schema = 'public'
+ORDER BY table_name, ordinal_position;
+
+
+-- Show distinct patient names
+SELECT DISTINCT nombre_paciente
+FROM pacientes;
+
+--Pagination – get 20 patients starting from row 10:
+SELECT * 
+FROM pacientes
+LIMIT 20 OFFSET 10;
+
+--Minimum & Maximum exam count (from the view)
+SELECT MIN(exam_count) AS min_exam FROM view_total_examenes;
+SELECT MAX(exam_count) AS max_exam FROM view_total_examenes;
+
+--Average number of exams (rounded)
+SELECT ROUND(AVG(exam_count), 0) AS avg_exam
+FROM view_total_examenes;
+
+--Count total patients
+SELECT COUNT(codigo_paciente) AS total_pacientes
+FROM pacientes;
+
+--Patients whose names match a group
+SELECT * FROM pacientes;
+SELECT * 
+FROM pacientes
+WHERE nombre_paciente IN (
+  'Ana María Gómez',
+  'Luis Alberto Martínez',
+  'Pedro Antonio Sánchez'
+);
+
+
+--Exams whose names are in a certain group
+SELECT * 
+FROM examen
+WHERE nombre_examen IN ('Ecocardiograma', 'Radiografía de Tórax', 'Examen de Sangre');
+
+
+--Exams with count between 20 and 40
+SELECT * 
+FROM view_total_examenes
+WHERE exam_count BETWEEN 20 AND 40
+ORDER BY exam_count;
+
+--Truncate long exam names to 20 characters
+SELECT codigo_examen, SUBSTRING(nombre_examen FROM 1 FOR 20) AS nombre_corto
+FROM examen;
+
+--Combine exams and medics using UNION
+SELECT codigo_examen::text AS codigo, nombre_examen AS nombre
+FROM examen
+
+UNION
+
+SELECT codigo_medico::text, nombre_medico
+FROM medico
+
+ORDER BY codigo;
+
+--PRACTICA CONSULTAS 28.03.2025
+--Subconsulta para buscar médicos que realizaron más de 5 exámenes (basada en detalle_historia)
+SELECT nombre_medico
+FROM medico
+WHERE codigo_medico IN (
+    SELECT codigo_medico
+    FROM detalle_historia
+    GROUP BY codigo_medico
+    HAVING COUNT(codigo_examen) > 5
+);
+
+--todos los exámenes cuyo recuento sea superior a la media de exámenes
+SELECT exam_name, exam_count
+FROM view_total_examenes
+WHERE exam_count > (
+    SELECT AVG(exam_count)
+    FROM view_total_examenes
+)
+ORDER BY exam_count DESC;
+
+

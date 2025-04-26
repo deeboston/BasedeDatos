@@ -1,0 +1,72 @@
+SELECT TRIM(e.codigo_examen)||' '||UPPER(TRIM(e.nombre_examen))||' '||UPPER(TRIM(e.nombre_examen))||' '||TRIM(m.codigo_medico)||' '||TRIM(m.nombre_medico) AS examen 
+FROM detalle_historia dh, examen e, medico m 
+WHERE dh.codigo_examen = e.codigo_examen AND dh.codigo_medico = m.codigo_medico 
+ORDER BY e.codigo_examen;
+
+CREATE OR REPLACE FUNCTION public.actualizar_nombre_examen()
+RETURNS trigger 
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.nombre_examen := UPPER(TRIM(NEW.nombre_examen));
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER actualizar_nombre_examen
+BEFORE UPDATE OF nombre_examen ON public.examen
+FOR EACH ROW
+EXECUTE FUNCTION public.actualizar_nombre_examen();
+
+CREATE TRIGGER insertar_nombre_examen
+BEFORE INSERT ON public.examen
+FOR EACH ROW
+EXECUTE FUNCTION public.actualizar_nombre_examen();
+
+
+SELECT TRIM(e.codigo_examen)||' '||(TRIM(e.nombre_examen))||' '||(TRIM(e.nombre_examen))||' '||TRIM(m.codigo_medico)||' '||TRIM(m.nombre_medico) AS examen 
+FROM detalle_historia dh, examen e, medico m 
+WHERE dh.codigo_examen = e.codigo_examen AND dh.codigo_medico = m.codigo_medico 
+ORDER BY e.codigo_examen;
+
+
+--puerbas de notas
+CREATE TABLE notas (
+    nataa NUMERIC,
+    notab NUMERIC,
+    notac NUMERIC,
+    notalfinal NUMERIC
+);
+
+CREATE OR REPLACE FUNCTION calcular_nota_final() 
+RETURNS trigger AS $$
+BEGIN
+    -- Calculate the final grade as the average of nota_a, nota_b, and nota_c, and round to 2 decimal places
+    NEW.notalfinal := ROUND((NEW.nota_a + NEW.nota_b + NEW.nota_c) / 3, 2);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+ALTER TABLE notas
+ALTER COLUMN notalfinal TYPE DECIMAL(5,2);
+
+CREATE OR REPLACE FUNCTION calcular_nota_final() 
+RETURNS trigger AS $$
+BEGIN
+    NEW.notalfinal := ROUND((NEW.nota_a + NEW.nota_b + NEW.nota_c) / 3, 2);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+ALTER TABLE notas
+ALTER COLUMN notalfinal TYPE DECIMAL(5,2);
+
+CREATE TRIGGER trigger_calcular_nota_final
+BEFORE INSERT OR UPDATE ON notas
+FOR EACH ROW
+EXECUTE FUNCTION calcular_nota_final();
+
+SELECT * FROM notas;
+
+
+

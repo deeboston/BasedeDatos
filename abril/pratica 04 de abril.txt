@@ -1,0 +1,100 @@
+--para ver todo las tablas y columnas
+SELECT 
+    table_name AS tabla,
+    column_name AS columna,
+    data_type AS tipo_dato
+FROM information_schema.columns
+--para ver todo las tablas y columnas
+SELECT 
+    table_name AS tabla,
+    column_name AS columna,
+    data_type AS tipo_dato
+FROM information_schema.columns
+WHERE table_schema = 'public'
+ORDER BY table_name, ordinal_position;
+
+--pacientes que han sido atendidios + 2 veces (todo los examens)
+SELECT p.codigo_paciente, p.nombre_paciente
+FROM pacientes P
+WHERE p.codigo_paciente IN(
+	SELECT h.codigo_paciente
+	FROM historia h
+	GROUP BY h.codigo_paciente
+	HAVING COUNT(*) > 2
+);
+	
+SELECT e.nombre_examen, COUNT(*) AS veces_realizado
+FROM detalle_historia d
+JOIN examen e ON d.codigo_examen = e.codigo_examen
+GROUP BY e.nombre_examen
+ORDER BY veces_realizado DESC;
+
+--pacientes que han sido atendidios + 2 veces (examen de vision,orina y prueba de Funcion pulmonar)
+SELECT 
+    p.codigo_paciente, 
+    p.nombre_paciente, 
+    e.nombre_examen, 
+    COUNT(*) AS veces_realizado
+FROM historia h
+JOIN detalle_historia dh ON h.codigo_historia = dh.codigo_historia
+JOIN examen e ON dh.codigo_examen = e.codigo_examen
+JOIN pacientes p ON h.codigo_paciente = p.codigo_paciente
+WHERE e.nombre_examen IN (
+    'Examen de Visión',
+    'Examen de Orina',
+    'Prueba de Función Pulmonar'
+)
+AND p.codigo_paciente IN (
+    SELECT examenes_repetidos.codigo_paciente
+    FROM (
+        SELECT h.codigo_paciente, e.nombre_examen, COUNT(*) AS veces
+        FROM historia h
+        JOIN detalle_historia dh ON h.codigo_historia = dh.codigo_historia
+        JOIN examen e ON dh.codigo_examen = e.codigo_examen
+        WHERE e.nombre_examen IN (
+            'Examen de Visión',
+            'Examen de Orina',
+            'Prueba de Función Pulmonar'
+        )
+        GROUP BY h.codigo_paciente, e.nombre_examen
+        HAVING COUNT(*) > 1
+    ) AS examenes_repetidos
+    GROUP BY examenes_repetidos.codigo_paciente
+    HAVING COUNT(*) = 3
+)
+GROUP BY p.codigo_paciente, p.nombre_paciente, e.nombre_examen
+ORDER BY p.codigo_paciente, e.nombre_examen;
+
+--cuanto medicos y su nombre han sido examens de exam de BIOSIA DE PIEL,EXAMEN DE HECES mas que dos veces
+SELECT 
+    e.nombre_examen AS exam_name,
+    m.nombre_medico AS doctor_name,
+    dh.codigo_medico AS doctor_id,
+    COUNT(*) AS times_performed
+FROM 
+    detalle_historia dh
+JOIN 
+    examen e ON dh.codigo_examen::text = e.codigo_examen::text
+JOIN 
+    medico m ON dh.codigo_medico = m.codigo_medico
+WHERE 
+    e.nombre_examen IN ('Examen de Heces', 'Biopsia de Piel')
+GROUP BY 
+    e.nombre_examen, m.nombre_medico, dh.codigo_medico
+HAVING 
+    COUNT(*) > 1
+ORDER BY 
+    e.nombre_examen, times_performed DESC;
+
+SELECT 
+    CASE 
+        WHEN e.codigo_examen::numeric < 16 THEN 'LABORATORIO'
+        WHEN e.codigo_examen::numeric BETWEEN 16 AND 24 THEN 'PARACLINICOS'
+        ELSE 'SIN CLASIFICAR'
+    END AS tipo_examen,
+    COUNT(*) AS total_realizados
+FROM examen e
+JOIN detalle_historia dh ON e.codigo_examen = dh.codigo_examen
+GROUP BY tipo_examen
+ORDER BY total_realizados DESC;
+

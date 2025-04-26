@@ -1,0 +1,185 @@
+Explanation of the Queries
+
+Each query follows a similar structure using **`MAX`** and **`HAVING`** to find the highest count for each case. The key part of each query is the **subquery**, which calculates the total counts and finds the maximum value.
+
+---
+
+## **1. Médico que más atendió pacientes**
+🔍 **Find the doctor who attended the most patients.**
+```sql
+SELECT m.codigo_medico, m.nombre_medico, COUNT(h.codigo_paciente) AS total_pacientes
+FROM detalle_historia dh
+JOIN historia h ON dh.codigo_historia = h.codigo_historia
+JOIN medico m ON dh.codigo_medico = m.codigo_medico
+GROUP BY m.codigo_medico, m.nombre_medico
+HAVING COUNT(h.codigo_paciente) = (
+    SELECT MAX(total_pacientes)
+    FROM (
+        SELECT COUNT(h.codigo_paciente) AS total_pacientes
+        FROM detalle_historia dh
+        JOIN historia h ON dh.codigo_historia = h.codigo_historia
+        GROUP BY dh.codigo_medico
+    ) AS subquery
+);
+```
+### **Breakdown:**
+1. The **inner subquery (`subquery`)**:
+   ```sql
+   SELECT COUNT(h.codigo_paciente) AS total_pacientes
+   FROM detalle_historia dh
+   JOIN historia h ON dh.codigo_historia = h.codigo_historia
+   GROUP BY dh.codigo_medico
+   ```
+   - This calculates **how many patients each doctor attended**.
+   - `GROUP BY dh.codigo_medico` ensures we count patients per doctor.
+
+2. The **middle query**:
+   ```sql
+   SELECT MAX(total_pacientes)
+   FROM (subquery)
+   ```
+   - This extracts the **highest number of patients attended**.
+
+3. The **main query**:
+   ```sql
+   SELECT m.codigo_medico, m.nombre_medico, COUNT(h.codigo_paciente) AS total_pacientes
+   ```
+   - Joins `medico` to get doctor names.
+   - Uses `HAVING COUNT(h.codigo_paciente) = (max_value)` to **filter only the doctor(s) with the highest count**.
+
+---
+
+## **2. Médico que más realizó exámenes**
+🔍 **Find the doctor who performed the most exams.**
+```sql
+SELECT m.codigo_medico, m.nombre_medico, COUNT(dh.codigo_examen) AS total_examenes
+FROM detalle_historia dh
+JOIN medico m ON dh.codigo_medico = m.codigo_medico
+GROUP BY m.codigo_medico, m.nombre_medico
+HAVING COUNT(dh.codigo_examen) = (
+    SELECT MAX(total_examenes)
+    FROM (
+        SELECT COUNT(dh.codigo_examen) AS total_examenes
+        FROM detalle_historia dh
+        GROUP BY dh.codigo_medico
+    ) AS subquery
+);
+```
+### **Breakdown:**
+1. The **subquery**:
+   ```sql
+   SELECT COUNT(dh.codigo_examen) AS total_examenes
+   FROM detalle_historia dh
+   GROUP BY dh.codigo_medico
+   ```
+   - This counts **how many exams each doctor performed**.
+
+2. The **middle query**:
+   ```sql
+   SELECT MAX(total_examenes)
+   FROM (subquery)
+   ```
+   - This finds the **maximum number of exams performed**.
+
+3. The **main query**:
+   ```sql
+   HAVING COUNT(dh.codigo_examen) = (max_value)
+   ```
+   - Filters only **the doctor(s) who performed the most exams**.
+
+---
+
+## **3. Examen que más se realizó**
+🔍 **Find the most performed exam.**
+```sql
+SELECT e.codigo_examen, e.nombre_examen, COUNT(dh.codigo_examen) AS total_realizados
+FROM detalle_historia dh
+JOIN examen e ON dh.codigo_examen = e.codigo_examen
+GROUP BY e.codigo_examen, e.nombre_examen
+HAVING COUNT(dh.codigo_examen) = (
+    SELECT MAX(total_realizados)
+    FROM (
+        SELECT COUNT(dh.codigo_examen) AS total_realizados
+        FROM detalle_historia dh
+        GROUP BY dh.codigo_examen
+    ) AS subquery
+);
+```
+### **Breakdown:**
+1. The **subquery**:
+   ```sql
+   SELECT COUNT(dh.codigo_examen) AS total_realizados
+   FROM detalle_historia dh
+   GROUP BY dh.codigo_examen
+   ```
+   - This counts **how many times each exam was performed**.
+
+2. The **middle query**:
+   ```sql
+   SELECT MAX(total_realizados)
+   FROM (subquery)
+   ```
+   - This extracts the **highest count**.
+
+3. The **main query**:
+   ```sql
+   HAVING COUNT(dh.codigo_examen) = (max_value)
+   ```
+   - Filters only **the most performed exam**.
+
+---
+
+## **4. Paciente con más historias clínicas**
+🔍 **Find the patient with the most medical records (`historia`).**
+```sql
+SELECT p.codigo_paciente, p.nombre_paciente, COUNT(h.codigo_historia) AS total_historias
+FROM historia h
+JOIN pacientes p ON h.codigo_paciente = p.codigo_paciente
+GROUP BY p.codigo_paciente, p.nombre_paciente
+HAVING COUNT(h.codigo_historia) = (
+    SELECT MAX(total_historias)
+    FROM (
+        SELECT COUNT(h.codigo_historia) AS total_historias
+        FROM historia h
+        GROUP BY h.codigo_paciente
+    ) AS subquery
+);
+```
+### **Breakdown:**
+1. The **subquery**:
+   ```sql
+   SELECT COUNT(h.codigo_historia) AS total_historias
+   FROM historia h
+   GROUP BY h.codigo_paciente
+   ```
+   - Counts **how many histories each patient has**.
+
+2. The **middle query**:
+   ```sql
+   SELECT MAX(total_historias)
+   FROM (subquery)
+   ```
+   - Finds the **highest number of histories**.
+
+3. The **main query**:
+   ```sql
+   HAVING COUNT(h.codigo_historia) = (max_value)
+   ```
+   - Filters only **the patient with the most medical records**.
+
+---
+
+## **Summary of `AS subquery`**
+| **Query Type** | **Purpose of `AS subquery`** |
+|---------------|-----------------------------|
+| Médico con más pacientes | Finds how many patients each doctor attended. |
+| Médico con más exámenes | Finds how many exams each doctor performed. |
+| Examen más realizado | Finds how many times each exam was done. |
+| Paciente con más historias | Finds how many records each patient has. |
+
+**🛠️ Why do we use `AS subquery`?**
+- It **creates a temporary table** that stores the total counts.
+- Then, we **find the maximum value**.
+- Finally, we **filter the main table** using that maximum.
+
+🚀 Let me know if you need further clarifications! 😊

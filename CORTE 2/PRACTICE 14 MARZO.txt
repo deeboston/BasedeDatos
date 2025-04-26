@@ -1,0 +1,39 @@
+--patients who have taken the same exam more than 5 times
+SELECT 
+    h.codigo_paciente AS patient_id, 
+    p.nombre_paciente AS patient_name, 
+    e.nombre_examen AS exam_name, 
+    COUNT(*) AS exam_count
+FROM historia h
+JOIN pacientes p ON h.codigo_paciente = p.codigo_paciente
+JOIN detalle_historia dh ON h.codigo_historia = dh.codigo_historia
+JOIN examen e ON dh.codigo_examen = e.codigo_examen
+GROUP BY patient_id, patient_name, exam_name
+HAVING Count(*) > 5;
+
+SELECT e.nombre_examen AS exam_name, 
+       COUNT(*) AS exam_count
+FROM detalle_historia dh
+JOIN examen e ON dh.codigo_examen = e.codigo_examen
+GROUP BY e.nombre_examen
+HAVING COUNT(*) > 20
+ORDER BY exam_count DESC;
+
+SELECT e.nombre_examen AS exam_name, 
+       COUNT(*) AS exam_count
+FROM detalle_historia dh
+JOIN examen e ON dh.codigo_examen = e.codigo_examen
+GROUP BY e.nombre_examen
+HAVING COUNT(*) > 5
+ORDER BY exam_count DESC;
+
+
+--pais que tiene mas de 2 departamento
+SELECT p.codigo, p.nombre, COUNT(*) AS cantidad
+FROM pais AS p, departamento AS d
+WHERE p.codigo = d.codigo_pais
+GROUP BY p.codigo, p.nombre
+HAVING COUNT(*) > 2
+ORDER BY p.codigo;
+
+

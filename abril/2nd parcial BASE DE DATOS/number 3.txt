@@ -1,0 +1,60 @@
+-- INSERCIÓN DE DATOS DE PRUEBA
+
+INSERT INTO Grupos (id, nombre, area_tematica) VALUES
+(1, 'Grupo A', 'Salud'),
+(2, 'Grupo B', 'Tecnología');
+
+INSERT INTO Investigadores (id, nombre, email, grupo_id) VALUES
+(1, 'Ana Gómez', 'ana@example.com', 1),
+(2, 'Luis Pérez', 'luis@example.com', 1),
+(3, 'Carla Ruiz', 'carla@example.com', 2),
+(4, 'Jorge León', 'jorge@example.com', 2),
+(5, 'Marta Díaz', 'marta@example.com', 2);
+
+INSERT INTO Proyectos (id, titulo, fecha_inicio, fecha_fin, lider_id) VALUES
+(1, 'Proyecto Salud 1', '2024-01-01', '2024-06-30', 1),
+(2, 'Proyecto Salud 2', '2024-02-01', '2024-08-30', 1),
+(3, 'Proyecto Tech', '2024-03-01', '2024-12-30', 3),
+(4, 'Proyecto Innovación', '2024-04-01', '2024-11-30', 2),
+(5, 'Proyecto Sin Asignación', '2024-05-01', '2024-10-30', 4);
+
+INSERT INTO Proyecto_Investigador (proyecto_id, investigador_id) VALUES
+(1, 1),
+(1, 2),
+(2, 1),
+(2, 3),
+(3, 3),
+(3, 4),
+(3, 5),
+(4, 1),
+(4, 2),
+(4, 3);
+
+-- CONSULTA a) Investigadores que están en más de 3 proyectos
+SELECT i.nombre
+FROM Investigadores i
+JOIN Proyecto_Investigador pi ON i.id = pi.investigador_id
+GROUP BY i.id, i.nombre
+HAVING COUNT(pi.proyecto_id) >= 3;
+
+-- CONSULTA b) Proyectos sin investigadores asignados
+SELECT p.titulo
+FROM Proyectos p
+LEFT JOIN Proyecto_Investigador pi ON p.id = pi.proyecto_id
+WHERE pi.proyecto_id IS NULL;
+
+
+-- CONSULTA c) Crear vista con título, líder y cantidad de investigadores
+CREATE OR REPLACE VIEW Vista_Proyectos_Detalle AS
+SELECT 
+  p.titulo,
+  l.nombre AS lider_nombre,
+  COUNT(pi.investigador_id) AS numero_investigadores
+FROM Proyectos p
+LEFT JOIN Investigadores l ON p.lider_id = l.id
+LEFT JOIN Proyecto_Investigador pi ON p.id = pi.proyecto_id
+GROUP BY p.id, p.titulo, l.nombre;
+
+SELECT * FROM Vista_Proyectos_Detalle;
+
+

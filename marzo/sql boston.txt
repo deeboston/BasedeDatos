@@ -1,0 +1,89 @@
+INSERT INTO departamento (codigo, nombre, codigo_pais) 
+VALUES 
+('01', 'Bolívar', '50'),
+('02', 'Quindío', '50'),
+('03', 'Cundinamarca', '50');
+
+INSERT INTO departamento (codigo, nombre, codigo_pais) 
+VALUES 
+('04', 'Demerara-Mahaica', '51'),
+('05', 'Essequibo Islands-West Demerara', '51'),
+('06', 'Upper Takutu-Upper Essequibo', '51');
+
+INSERT INTO departamento (codigo, nombre, codigo_pais) 
+VALUES 
+('07', 'Belize District', '56'),
+('08', 'Cayo District', '56');
+
+SELECT 
+    p.codigo AS pais_codigo, 
+    p.nombre AS pais_nombre, 
+    d.codigo AS departamento_codigo, 
+    d.nombre AS departamento_nombre
+FROM departamento d
+INNER JOIN pais p ON d.codigo_pais = p.codigo;
+
+
+INSERT INTO ciudad (codigo, nombre, codigo_departamento) 
+VALUES 
+('C1', 'Cartagena', '01'),  
+('C2', 'Armenia', '02'),    
+('C3', 'Bogotá', '03');
+
+INSERT INTO ciudad (codigo, nombre, codigo_departamento) 
+VALUES 
+('G1', 'Georgetown', '04'), 
+('G2', 'Parika', '05');
+
+INSERT INTO ciudad (codigo, nombre, codigo_departamento) 
+VALUES 
+('B1', 'Belize City', '07'), 
+('B2', 'San Ignacio', '08'), 
+('B3', 'Belmopan', '08');
+
+SELECT 
+    ciudad.codigo AS ciudad_codigo, 
+    ciudad.nombre AS ciudad_nombre, 
+    departamento.nombre AS departamento_nombre, 
+    pais.nombre AS pais_nombre
+FROM ciudad
+JOIN departamento ON ciudad.codigo_departamento = departamento.codigo
+JOIN pais ON departamento.codigo_pais = pais.codigo;
+
+
+SELECT * FROM ciudad;
+
+ALTER TABLE departamento DROP COLUMN pais_codigo;
+ALTER TABLE ciudad ALTER COLUMN codigo TYPE VARCHAR(5);
+
+--todo base de datos
+SELECT 
+    ciudad.codigo AS ciudad_codigo, 
+    ciudad.nombre AS ciudad_nombre, 
+    departamento.codigo AS departamento_codigo,
+    departamento.nombre AS departamento_nombre, 
+    pais.codigo AS pais_codigo,
+    pais.nombre AS pais_nombre
+FROM ciudad
+JOIN departamento ON ciudad.codigo_departamento = departamento.codigo
+JOIN pais ON departamento.codigo_pais = pais.codigo
+ORDER BY ciudad.codigo;
+
+--ciudades por departemento
+SELECT 
+    departamento.nombre AS departamento_nombre, 
+    COUNT(ciudad.codigo) AS total_ciudades
+FROM ciudad
+JOIN departamento ON ciudad.codigo_departamento = departamento.codigo
+GROUP BY departamento.nombre
+ORDER BY total_ciudades DESC;
+
+--ciudades por pais
+SELECT 
+    pais.nombre AS pais_nombre, 
+    COUNT(ciudad.codigo) AS total_ciudades
+FROM ciudad
+JOIN departamento ON ciudad.codigo_departamento = departamento.codigo
+JOIN pais ON departamento.codigo_pais = pais.codigo
+GROUP BY pais.nombre
+ORDER BY total_ciudades DESC;

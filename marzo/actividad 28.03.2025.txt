@@ -1,0 +1,9 @@
+SELECT nombre_paciente
+FROM pacientes
+WHERE codigo_paciente NOT IN (
+    SELECT h.codigo_paciente
+    FROM historia h
+    JOIN detalle_historia dh ON h.codigo_historia = dh.codigo_historia
+    WHERE dh.codigo_examen = '10'
+);
+

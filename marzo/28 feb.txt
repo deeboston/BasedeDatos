@@ -1,0 +1,54 @@
+28 de Feb
+key words
+-CREATE
+-SELECT
+-INSERT
+-UPDATE
+-DELETE
+
+
+example
+CREATE	Pais(
+codigo varchar(5),
+nombre varchar(100
+
+);
+
+--to show pais as lower case
+SELECT codigo AS codigo_pais, LOWER(nombre) AS nombre 
+FROM pais 
+WHERE codigo = '50';
+
+
+SELECT codigo AS codigo_pais, nombre AS nombre 
+FROM pais 
+WHERE codigo = '50' or upper(nombre) LIKE '%B%';
+
+--ciudad por pais
+SELECT p.codigo AS codigo_pais, 
+       p.nombre AS nombre_pais, 
+       COUNT(c.codigo) AS cantidad_ciudades
+FROM pais p, departamento d, ciudad c
+WHERE p.codigo = d.codigo_pais 
+AND d.codigo = c.codigo_departamento
+GROUP BY p.codigo, p.nombre
+ORDER BY cantidad_ciudades;
+
+
+--ciudad por departamento
+SELECT d.codigo AS codigo_departamento, 
+       d.nombre AS nombre_departamento, 
+       COUNT(c.codigo) AS cantidad_ciudades
+FROM departamento d, ciudad c
+WHERE d.codigo = c.codigo_departamento
+GROUP BY d.codigo, d.nombre
+ORDER BY cantidad_ciudades;
+
+--departamentos per pais
+SELECT p.codigo AS codigo_pais, 
+       p.nombre AS nombre_pais, 
+       COUNT(d.codigo) AS cantidad_departamentos
+FROM pais p, departamento d
+WHERE p.codigo = d.codigo_pais
+GROUP BY p.codigo, p.nombre
+ORDER BY cantidad_departamentos;

@@ -1,0 +1,25 @@
+SELECT m.codigo_medico,
+    m.nombre_medico,
+    count(dh.codigo_examen) AS total_examen
+   FROM detalle_historia dh
+     JOIN medico m ON dh.codigo_medico::text = m.codigo_medico::text
+  GROUP BY m.codigo_medico,  m.nombre_medico
+  ORDER BY m.codigo_medico;
+Breiner Lopez Bustamantes
+7:44 PM
+select * from medico where codigo_medico in ( SELECT m.codigo_medico
+   FROM detalle_historia dh
+     JOIN medico m ON dh.codigo_medico::text = m.codigo_medico::text
+  GROUP BY m.codigo_medico,  m.nombre_medico
+HAVING COUNT(dh.codigo_examen) > 30
+  ORDER BY m.codigo_medico);
+Breiner Lopez Bustamantes
+7:55 PM
+select codigo_examen, nombre_examen, CASE 
+WHEN codigo_examen::numeric < 16 THEN 'LABORATORIO'  
+WHEN codigo_examen::numeric > 15 AND codigo_examen::numeric < 25 THEN 'PARACLINICOS'
+ELSE 
+	'Sin Clasificar'
+	END
+from examen
+uzs-wgdz-nrv

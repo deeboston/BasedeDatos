@@ -1,0 +1,78 @@
+CREATE TABLE Clientes (
+    ID INT PRIMARY KEY,
+    Nombre VARCHAR(50),
+    Email VARCHAR(100),
+    Teléfono VARCHAR(20),
+    Fecha_Registro DATE
+);
+
+CREATE TABLE Productos (
+    ID INT PRIMARY KEY,
+    Nombre VARCHAR(50),
+    Precio DECIMAL(10,2),
+    Stock INT,
+    Categoría VARCHAR(50)
+);
+
+CREATE TABLE Pedidos (
+    ID INT PRIMARY KEY,
+    Cliente_ID INT,
+    Producto_ID INT,
+    Cantidad INT,
+    Fecha_Pedido DATE,
+    Estado VARCHAR(20),
+    FOREIGN KEY (Cliente_ID) REFERENCES Clientes(ID),
+    FOREIGN KEY (Producto_ID) REFERENCES Productos(ID)
+);
+
+¡
+
+-- Insertar clientes
+INSERT INTO Clientes VALUES 
+(1, 'Ana Torres', 'ana@example.com', '3001234567', '2025-01-10'),
+(2, 'Luis Díaz', 'luis@example.com', '3007654321', '2025-01-15'),
+(3, 'Sofía Gómez', 'sofia@example.com', '3012345678', '2025-01-20');
+
+SELECT * FROM Clientes;
+
+
+-- Insertar productos
+INSERT INTO Productos VALUES 
+(1, 'Laptop', 2500000.00, 10, 'Tecnología'),
+(2, 'Mouse', 80000.00, 50, 'Accesorios');
+
+SELECT * FROM Productos;
+
+
+-- Insertar pedidos
+INSERT INTO Pedidos VALUES 
+(1, 1, 1, 1, '2025-02-01', 'Enviado'),
+(2, 2, 2, 2, '2025-02-02', 'Pendiente');
+
+SELECT * FROM Pedidos;
+
+
+
+UPDATE Productos
+SET Precio = Precio * 1.10
+WHERE ID = 1; -- Por ejemplo, la Laptop
+
+
+DELETE FROM Clientes
+WHERE ID NOT IN (SELECT DISTINCT Cliente_ID FROM Pedidos);
+
+ALTER TABLE productos ADD COLUMN precio_formateado VARCHAR(20);
+
+UPDATE productos 
+SET precio_formateado = TO_CHAR(precio, '9G999G999D00');
+
+SELECT 
+  id,
+  nombre,
+  TO_CHAR(precio, '9G999G999D00') AS precio_formateado,
+  stock,
+  categoría
+FROM productos;
+
+
+
